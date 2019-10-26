@@ -51,7 +51,7 @@ if (HPS_TIM_read_ASM(TIM0) && timer_start) {
 			HEX_write_ASM(HEX3, tensDis);
 			HEX_write_ASM(HEX4, minuteDis);
 			HEX_write_ASM(HEX5, tenmDis);
-}
+
   
 			int pb =read_PB_data_ASM();
 			if (pb & 1) { //Start timer
