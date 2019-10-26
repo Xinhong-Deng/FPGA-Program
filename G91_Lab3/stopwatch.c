@@ -55,14 +55,14 @@ if (HPS_TIM_read_ASM(TIM0) && timer_start) {
   
 			int pb =read_PB_data_ASM();
 			if (pb & 1) { //Start timer
-				timer_start = 1;
+				start = 1;
 			} else if ((pb & 2) && (timer_start)) { //Stop timer
-				timer_start = 0;
+				start = 0;
 			} else if (pb & 4) { 
-				ms_count = 0;
-				sec_count = 0;
-				min_count = 0;
-				timer_start = 0; 
+				ms = 0;
+				second = 0;
+				minute = 0;
+				start = 0; 
 				}
 				
 				HEX_write_ASM(HEX0 | HEX1 | HEX2 | HEX3 | HEX4 | HEX5, 48);
