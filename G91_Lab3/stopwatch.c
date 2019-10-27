@@ -77,7 +77,6 @@ if (HPS_TIM_read_INT_ASM(TIM0) && timer_start) {
 				tenmDis = '0';
 				}
 				
-				//HEX_write_ASM(HEX0 | HEX1 | HEX2 | HEX3 | HEX4 | HEX5, 48);
 			HEX_write_ASM(HEX0, mmsDis);
 			HEX_write_ASM(HEX1, msDis);
 			HEX_write_ASM(HEX2, secondDis);
