@@ -7,8 +7,9 @@
 .global HPS_TIM_config_ASM, HPS_TIM_read_INT_ASM, HPS_TIM_clear_INT_ASM
 HPS_TIM_config_ASM:
 //R0: address of the first component(TIM) in the struct
-LDR R1,[R0]
 PUSH {LR}
+//PUSH {R1-R8}
+LDR R1,[R0]
 AND R2, R1, #0x00000001				//get the bit0
 CMP R2, #0x00000001					//check whether bit0 is
 LDREQ R3, =TIM0
@@ -29,6 +30,7 @@ CMP R2, #0x00000008					//check whether bit3 is 1
 LDREQ R3, =TIM3
 MOVEQ R8, #25
 BLEQ SET
+//POP {R1-R8}
 POP {LR}
 BX LR
 
@@ -36,7 +38,7 @@ SET:
 ADD R4, R3, #8						//R4 IS THE ADDRESS OF THE CONTROL REGISTER
 LDR R5, [R4]						//R5 STORES THE CONTROL PART OF THE TIMER
 
-LDR R7, [R0, #8]					//READ THE ENABLE PARAMETER
+LDR R7, [R0, #8]					//READ THE LOAD ENABLE PARAMETER
 CMP R7, #1							//CHECK WHETHER ENABLE IS 1
 ORREQ R5, R5, #0x00000002			//UPDATE THE bitM WITH 1
 ANDEQ R5, R5, #0xFFFFFFFE			//SET THE E TO 0, SO THE LOAD VALUE CAN BE WRITE TO THE LOAD REGISTER
@@ -61,7 +63,8 @@ STR R5, [R3, #8]
 BX LR
 
 HPS_TIM_read_INT_ASM:
-LDR R1,[R0]							//LOAD THE PARAMETER VALUE (first component: TIM)
+//PUSH {R1-R4}
+MOV R1, R0							//LOAD THE PARAMETER VALUE (first component: TIM)
 AND R2, R1, #0x00000001				//get the bit0
 CMP R2, #0x00000001
 LDREQ R3,=TIM0
@@ -79,14 +82,16 @@ CMP R2, #0x00000008
 LDREQ R3,=TIM3
 BEQ READS
 READS:
-LDR R4, [R3, #16]
-AND R0, R3, #1
+LDR R4, [R3, #16]					//R4 is the interrupt signal value
+AND R0, R4, #1
+//POP {R1-R4}
 BX LR
 
+
 HPS_TIM_clear_INT_ASM:
-//R0: address of the first component(TIM) in the struct
-LDR R1,[R0]
 PUSH {LR}
+//PUSH {R1-R10}
+MOV R1, R0
 AND R2, R1, #0x00000001				//get the bit0
 CMP R2, #0x00000001					//check whether bit0 is
 LDREQ R3, =TIM0
@@ -103,18 +108,11 @@ AND R2, R1, #0x00000008				//get the bit 3
 CMP R2, #0x00000008					//check whether bit3 is 1
 LDREQ R3, =TIM3
 BLEQ SET_F_S
+//POP {R1-R10}
 POP {LR}
 BX LR
 SET_F_S:
-LDR R4, [R3, #8]
-LDR R5, [R3, #8]
-MOV R10, #0xFFFFFFFB
-ORR R5, R5, R10
-STR R5, [R3, #8]
-MOV R6, #0
-STR R6, [R3, #12]
-STR R6, [R3, #16]
-STR R4, [R3, #8]
+LDR R4, [R3, #12]
 BX LR
 
 .end
