@@ -2,7 +2,7 @@
 .equ PUSHBUTTON_BASE, 0xFF200050
 .equ PUSHBUTTON_INTERRUPTION, 0xFF200058
 .equ PUSHBUTTON_EDGECAPTURE, 0xFF20005C
-.global read_PB_data_ASM, PB_data_is_pressed_ASM, read_PB_edgecap_ASM, PB_edgecap_is_pressed_ASM, PB_clear_edgecp_ASM, enable_PB_INT_ASM, disable_PB_INT_ASM
+.global read_PB_data_ASM, PB_data_is_pressed_ASM, read_PB_edgecap_ASM, PB_edgecap_is_pressed_ASM, PB_clear_edgecap_ASM, enable_PB_INT_ASM, disable_PB_INT_ASM
 
 read_PB_data_ASM:
 LDR R1, =PUSHBUTTON_BASE
@@ -84,26 +84,11 @@ MOV R0, #0
 
 BX LR
 
-PB_clear_edgecp_ASM:
+PB_clear_edgecap_ASM:
 //R0 PARAMETER FROM C
 LDR R1, =PUSHBUTTON_EDGECAPTURE
-LDR R2, [R1]			//value of the edgecapture register
-MOV R4, #3				//counter for loop
-MOV R5, #0xFFFFFFF0		//mask
-LOOP_CLEAR:
-SUBS R4, R4, #1			//update counter
-BLT  STORE_VALUE
-AND R3, R0, #1			//R0: the parameter from C; this gets the last bit's value
-CMP R3, #1				//Check the result of the last bit
-ANDEQ R2, R2, R5			//modify the value
-MOV R6, #2
-MOV R7, #15
-MLA R5, R5, R6, R7		//update the mask for the next iteration
-LSR R0, #1
-B LOOP_CLEAR
-//FINISH CONSTRUCTING THE NEW EDGECAPTURE VALUE
-STORE_VALUE:
-STR R2, [R1]
+MOV R5, #0
+STR R5, [R1]
 BX LR
 
 

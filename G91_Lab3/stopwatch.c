@@ -113,6 +113,7 @@ hpstim.LD_en = 1;
 hpstim.INT_en = 0;
 hpstim.enable = 1;
 HPS_TIM_config_ASM(&hpstim);
+disable_PB_INT_ASM(PB0|PB1|PB2);
 
 while(1){
 	if ( hps_tim0_int_flag && timer_start) {
