@@ -19,11 +19,8 @@
 	.global hps_tim0_int_flag
 	.global pb_int_flag
 
-hps_tim0_int_flag:
-	.word 0x0
-
-pb_int_flag:
-	.word 0x0
+hps_tim0_int_flag: .word 0x0
+pb_int_flag: .word 0x0
 
 A9_PRIV_TIM_ISR:
 	BX LR
@@ -31,14 +28,14 @@ A9_PRIV_TIM_ISR:
 HPS_GPIO1_ISR:
 	BX LR
 	
-HPS_TIM0_ISR:						//when the interrupt is enabled, the status bit should be changed to one 
-	push {LR}				
+HPS_TIM0_ISR:
+push {LR}				
 	
 	MOV R0, #0x1
-	BL HPS_TIM_clear_INT_ASM		//clear Tim0
+	BL HPS_TIM_clear_INT_ASM		
 
-	LDR R0, =hps_tim0_int_flag 		//load the interrupt flag
-	MOV R1, #1						//set the flag to 1
+	LDR R0, =hps_tim0_int_flag 		
+	MOV R1, #1						
 	STR R1, [R0]
 
 	POP	{LR}
@@ -56,15 +53,14 @@ HPS_TIM3_ISR:
 FPGA_INTERVAL_TIM_ISR:
 	BX LR
 	
-FPGA_PB_KEYS_ISR:					//generate interrupt
+FPGA_PB_KEYS_ISR:
 	PUSH {LR}
-	BL read_PB_edgecap_ASM			 //read pushbutton edge capture register to see which button is pressed
+	BL read_PB_data_ASM			 
 	
 	LDR R1, =pb_int_flag
-
-	STR R0, [R1]					//set the flag
+	STR R0, [R1]					
 	
-	BL PB_clear_edgecap_ASM			//clear the edgecapture register
+	//BL PB_clear_edgecap_ASM			
 	POP {LR}
 	BX LR
 	
@@ -88,5 +84,5 @@ FPGA_JP2_ISR:
 	
 FPGA_PS2_DUAL_ISR:
 	BX LR
-	
+
 	.end
