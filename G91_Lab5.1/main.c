@@ -1,4 +1,5 @@
-/**#include "./drivers/inc/vga.h"
+/*
+#include "./drivers/inc/vga.h"
 #include "./drivers/inc/ISRs.h"
 #include "./drivers/inc/LEDs.h"
 #include "./drivers/inc/audio.h"
@@ -9,80 +10,129 @@
 #include "./drivers/inc/ps2_keyboard.h"
 #include "./drivers/inc/HEX_displays.h"
 #include "./drivers/inc/slider_switches.h"
+float frequencies[] = {130.813, 146.832, 164.814, 174.614, 195.998, 220.000, 246.942, 261.626};
+double makeWave(int f, int t) {
 
-int amplitude = 10;
-int t = 0;
-
-float makeWave(int f, int t) {
-
-	float index = (f * t) % 4800;
+	float index = (f * t) % 48000;
 	int index1 = index;
 	int index2 = index + 1;
 	float decimal = index - index1;
 	float sineValue = (1 - decimal) * sine[index1] + 
 					decimal * sine[index2];
 
+	int index = ((int)f * t) % 48000;
+	double sineValue = sine[index];
 	return sineValue;
 }
 
 int main() {
 
-	int flag[8];
-	int signals[8];
-	int i=0;
-	for(; i<8; i++){
-		signals[i]=0;
-	}
+	int_setup(1, (int []){199});
+	HPS_TIM_config_t hps_tim;
+	hps_tim.tim = TIM0; 
+	hps_tim.timeout = 20; 
+	hps_tim.LD_en = 1; 
+	hps_tim.INT_en = 1; 
+	hps_tim.enable = 1; 
+
+	HPS_TIM_config_ASM(&hps_tim);
+
+	int amplitude = 1;
+	int t = 0;
+
+	int signal = 0;
+	char keyPressed;
+	char breakChar = 0;
+
 	while(1) {
 
-		char keyPressed;
-		int keyValid = read_ps2_data_ASM(&keyPressed);
-		if (keyValid) {
+		if (read_ps2_data_ASM(&keyPressed)) {
 			switch (keyPressed) {
 				case 0x1C:	//Key A
-					signals[0] = makeWave(130.813, t);
-					//printf("%d\n",signals[0]);
+					if (breakChar == 1){
+						breakChar = 0;
+						signal = -1;}
+					else
+						signal = 0;
 					break;
 				case 0x1B:	//KEY S
-					signals[1] = makeWave(146.832, t);
+					if (breakChar == 1){
+						signal = -1;
+						breakChar = 0;}
+					else
+					signal = 1;
 					break;
 				case 0x23:	//KEY D
-					signals[2] = makeWave(164.814, t);
+					if (breakChar == 1){
+						signal = -1;
+						breakChar = 0;}
+					else
+					signal = 2;
 					break;
 				case 0x2B:	//KEY F
-					signals[3] = makeWave(174.614, t);
+					if (breakChar == 1){
+						signal = -1;
+						breakChar = 0;}
+					else
+					signal = 3;
 					break;
 				case 0x3B:	//KEY J
-					signals[4] = makeWave(195.998, t);
+					if (breakChar == 1){
+						signal = -1;
+						breakChar = 0;}
+					else
+					signal = 4;
 					break;
 				case 0x42:	//KEY K
-					signals[5] = makeWave(220.000, t);
+					if (breakChar == 1){
+						signal = -1;
+						breakChar = 0;}
+					else
+					signal = 5;
 					break;
 				case 0x4B:	//KEY L
-					signals[6] = makeWave(246.942, t);
+					if (breakChar == 1){
+						signal = -1;
+						breakChar = 0;
+}
+					else
+					signal = 6;
 					break;
 				case 0x4C:	//KEY ;
-					signals[7] = makeWave(261.626, t);
+					if (breakChar == 1){
+						signal = -1;
+						breakChar = 0;
+}
+					else
+					signal = 7;
 					break;
 				case 0x6B:	//KEY Z, for volume up
-					amplitude ++;
+					if (breakChar == 1) {
+						breakChar = 0;
+					amplitude ++;}
 					break;
 				case 0x22:	//KEY X. for volume down
+					if (breakChar == 1) {
+						breakChar = 0;
 					if (amplitude > 0)
 						amplitude --;
+					}
 					break;
+				default:
+					breakChar = 0;
 
 			}
 
-			int sum = 0;
-			int i = 0;
-			for (; i < 8; i++) {
-				sum += signals[i];
-
+			int value;
+			if (signal != -1) {
+				value = amplitude * makeWave(frequencies[signal], t);
+			} else {
+				value = 0;
 			}
-printf("%d\n",sum);
-			if (audio_write_data_ASM(sum, sum)) {
-				t ++;
+			if(hps_tim0_int_flag == 1) {
+				hps_tim0_int_flag = 0;
+				audio_write_data_ASM(value, value);
+				t++;
 			}
 
 			if (t == 47999) {
@@ -93,7 +143,7 @@ printf("%d\n",sum);
 
 	return 0;
 }
-**/
+*/
 
 
 
@@ -114,8 +164,12 @@ printf("%d\n",sum);
 float frequencies[] = {130.813, 146.832, 164.814, 174.614, 195.998, 220.000, 246.942, 261.626};
 
 double makeWave(float f, int t) {
-	int index = (((int)f) * t)%48000;
-	double signal = sine[index];
+	
+	int result = (f * t) / 48000;
+	float index = (f * t) - (result * 48000);
+	int integer = (int) index;
+	int decimal = index - integer;
+	double signal = (1 - decimal) * sine[integer] + decimal * sine [integer + 1];
 
 	return signal;
 }
@@ -223,7 +277,7 @@ int main() {
 							}
 							break;
 						
-						case 0x22://KEY C FOR VOLUME DOWN
+						case 0x21://KEY C FOR VOLUME DOWN
 							if(breakchar == 1){
 								if(amplitude>0)
 								amplitude=amplitude--;
@@ -246,7 +300,6 @@ int main() {
 					signalSum += amplitude*makeWave(frequencies[i], t);
 					}
 			}
-			
 			if(hps_tim0_int_flag == 1) {
 				hps_tim0_int_flag = 0;
 				audio_write_data_ASM(signalSum, signalSum);
